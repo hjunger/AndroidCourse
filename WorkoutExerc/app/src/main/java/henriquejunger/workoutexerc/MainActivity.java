@@ -7,33 +7,38 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
+    private Settings settings;
+    private static int backgroundDefaulColor = Color.WHITE;
 
-    public static String EXTRA_ID_TITLE = "work.title";
-    private static String TITLE_TEXT = "Title of this Screen";
-
-    public static String EXTRA_ID_DRAWABLE = "work.image";
-    public static int DRAWABLE_ID = 0;
-
-    public static String EXTRA_ID_BACKGROUND = "work.background";
-    public static int BACKGROUND_COLOR = Color.WHITE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ImageView imageView;
+        initSettings();
+        setBackgroundColor();
+        setListenerToConstraintLayout();
+        setListenerToButtons();
+    }
 
-        imageView = (ImageView) findViewById(R.id.image_weight);
-        imageView.setTag(R.drawable.weight);
-        imageView = (ImageView) findViewById(R.id.image_yoga);
-        imageView.setTag(R.drawable.lotus);
-        imageView = (ImageView) findViewById(R.id.image_cardio);
-        imageView.setTag(R.drawable.heart);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setBackgroundColor();
+    }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        setBackgroundColor();
+    }
+
+    private void setListenerToConstraintLayout(){
         ConstraintLayout main = (ConstraintLayout) findViewById(R.id.main_layout);
         int countViews = main.getChildCount();
         for(int i = 0; i < countViews; i++){
@@ -49,36 +54,57 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setListenerToButtons(){
+        ImageButton settingBtn = (ImageButton)findViewById(R.id.settings_button);
+        settingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void setBackgroundColor(){
+        if(settings == null)
+            settings = Settings.getInstance();
+        settings.setBackgroundColor(backgroundDefaulColor);
+        settings.changeBackgroundColor(this, R.id.main_layout);
+    }
+
+    private void initSettings(){
+        // Initiate Settings
+        settings = Settings.getInstance();
+        ImageView imageView = (ImageView) findViewById(R.id.image_weight);
+        settings.setImageDrawable(imageView.getDrawable());
+        TextView textView = (TextView)findViewById(R.id.title_weight);
+        settings.setTitle(textView.getText().toString());
+    }
+
     private void callNewView(View v){
         if(v instanceof ConstraintLayout){
             ConstraintLayout layout = (ConstraintLayout) v;
             int countChildren = layout.getChildCount();
-            String title = TITLE_TEXT;
-            int drawableId = DRAWABLE_ID;
-            int backgroundColor = BACKGROUND_COLOR;
 
             for(int i = 0; i < countChildren; i++){
                 View view = layout.getChildAt(i);
 
                 if(view instanceof ImageView){
                     ImageView imageView = (ImageView)view;
-                    drawableId = (int)imageView.getTag();
+                    settings.setImageDrawable(imageView.getDrawable());
                 }
 
                 if(view instanceof TextView
                         && getResources().getResourceName(view.getId()).contains("title_")){
                     TextView textView = (TextView)view;
-                    title = textView.getText().toString();
+                    settings.setTitle(textView.getText().toString());
                 }
             }
 
             ColorStateList colorStateList = layout.getBackgroundTintList();
-            backgroundColor = colorStateList.getDefaultColor();
+            settings.setBackgroundColor(colorStateList.getDefaultColor());
 
             Intent intent = new Intent(MainActivity.this, WorkActivity.class);
-            intent.putExtra(EXTRA_ID_TITLE, title);
-            intent.putExtra(EXTRA_ID_DRAWABLE, drawableId);
-            intent.putExtra(EXTRA_ID_BACKGROUND, backgroundColor);
             startActivity(intent);
         }
     }

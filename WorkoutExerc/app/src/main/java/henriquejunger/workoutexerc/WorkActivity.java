@@ -1,6 +1,6 @@
 package henriquejunger.workoutexerc;
 
-import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,25 +8,23 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class WorkActivity extends AppCompatActivity {
+    private Settings settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_work);
-        Intent intent = getIntent();
         TextView titleView = (TextView) findViewById(R.id.title_work);
         ImageView imageView = (ImageView)findViewById(R.id.image_work);
-        ConstraintLayout layout = (ConstraintLayout)findViewById(R.id.weigth_main_layout);
+        settings = Settings.getInstance();
 
-        String title = intent.getStringExtra(MainActivity.EXTRA_ID_TITLE);
-        titleView.setText(title);
+        titleView.setText(settings.getTitle());
 
-        int drawableId = intent.getIntExtra(MainActivity.EXTRA_ID_DRAWABLE, MainActivity.DRAWABLE_ID);
-        if(drawableId != MainActivity.DRAWABLE_ID){
-            imageView.setImageResource(drawableId);
+        Drawable drawable = settings.getImageDrawable();
+        if(drawable != null){
+            imageView.setImageDrawable(drawable);
         }
 
-        layout.setBackgroundColor(intent.getIntExtra(MainActivity.EXTRA_ID_BACKGROUND,
-                MainActivity.BACKGROUND_COLOR));
+        settings.changeBackgroundColor(this, R.id.weigth_main_layout);
     }
 }
